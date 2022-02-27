@@ -2,9 +2,14 @@ package com.example.mybroadcastreceiver
 
 import android.Manifest
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -13,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.mybroadcastreceiver.ui.theme.MyBroadcastReceiverTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,10 +30,32 @@ class MainActivity : ComponentActivity() {
 
     private val broadcast = MyBroadcastReceiver()
 
+    private val requestPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            receiveBroadcast()
+            displayScreen()
+        } else {
+            Log.d("NOPY", "Permission Denied")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        receiveBroadcast()
-        displayScreen()
+        when {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED -> {
+                receiveBroadcast()
+                displayScreen()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.RECEIVE_SMS) -> {
+                Log.d("NOPY", "You shoud allow permission to received SMS")
+            }
+            else -> {
+                requestPermission.launch(Manifest.permission.RECEIVE_SMS)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -56,7 +84,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
+ห
     @Composable
     fun OtpScreen() {
         Scaffold(
