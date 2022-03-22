@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-ห
+
     @Composable
     fun OtpScreen() {
         Scaffold(
